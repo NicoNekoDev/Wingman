@@ -1,0 +1,37 @@
+#--------------------------------------------------------#
+#   __          ___                                      #
+#   \ \        / (_)                                     #
+#    \ \  /\  / / _ _ __   __ _ _ __ ___   __ _ _ __     #
+#     \ \/  \/ / | | '_ \ / _` | '_ ` _ \ / _` | '_ \    #
+#      \  /\  /  | | | | | (_| | | | | | | (_| | | | |   #
+#       \/  \/   |_|_| |_|\__, |_| |_| |_|\__,_|_| |_|   #
+#                          __/ |                         #
+#                         |___/                          #
+#--------------------------------------------------------#
+
+version: 1 # DO NOT CHANGE/REMOVE
+metrics: true
+update_check: true
+lang:
+  header: "&f[&6Wingman&f] &r"
+  no_permission: "&cYou don''t have permission!"
+  config_reloaded: "&aConfig reloaded."
+  console_cannot_use_command: "&cOnly players can use this command!"
+  new_version_available: "&aA new version of Wingman is available!"
+  player_not_found: "&cPlayer not found!"
+  # Placeholders: %hours% , %minutes% , %seconds%
+  flytime_remaining_format: "&aFly time: &b%hours%h:%minutes%m:%seconds%s"
+  flytime_permanent_format: "&aYour fly time is permanent."
+database:
+  # Be aware that chaging the type does not convert the values already stored
+  # Available values: SQL, MYSQL
+  type: SQL
+  file_name: "wingman.db"
+  # Ignore these if type is SQL
+  host: "localhost"
+  user: "user"
+  password: "p4ssW0rd"
+  port: "3306"
+  name: "name"
+  ssl: true
+  tabel_prefix: ""

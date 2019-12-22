@@ -1,0 +1,40 @@
+name: ${project.artifactId}
+version: ${project.version}
+author: nicuch
+main: ro.nicuch.wingman.WingmanPlugin
+softdepend: [PlaceholderAPI, Vault]
+website: https://www.spigotmc.org/resources/citizensbooks.37465/
+api-version: 1.13
+commands:
+  wingman:
+    description: Basic Wingman command.
+    permission: wingman.command.*
+  fly:
+    description: Fly command.
+    permission: wingman.command.fly
+permissions:
+  wingman.*:
+    children:
+      wingman.command.help: true
+      wingman.command.add: true
+      wingman.command.remove: true
+      wingman.command.reset: true
+      wingman.command.check: true
+      wingman.command.reload: true
+      wingman.command.fly: true
+  wingman.command.help:
+    default: false
+  wingman.command.add:
+    default: false
+  wingman.command.remove:
+    default: false
+  wingman.command.reset:
+    default: false
+  wingman.command.check:
+    default: true
+  wingman.command.reload:
+    default: false
+  wingman.command.fly:
+    default: true
+  wingman.notify:
+    default: op
