@@ -9,10 +9,7 @@ import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
 import org.bukkit.util.StringUtil;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 public class WingmanCommand implements TabExecutor {
     private final WingmanPlugin plugin;
@@ -142,9 +139,17 @@ public class WingmanCommand implements TabExecutor {
         } else if (args.length == 2) {
             switch (args[0]) {
                 case "add":
+                    if (!this.api.hasPermission(sender, "wingman.command.add"))
+                        break;
                 case "remove":
+                    if (this.api.hasPermission(sender, "wingman.command.remove"))
+                        break;
                 case "reset":
+                    if (this.api.hasPermission(sender, "wingman.command.reset"))
+                        break;
                 case "check":
+                    if (this.api.hasPermission(sender, "wingman.command.check"))
+                        break;
                     Bukkit.getOnlinePlayers().forEach(p -> commands.add(p.getName()));
                     break;
             }
@@ -152,16 +157,19 @@ public class WingmanCommand implements TabExecutor {
         } else if (args.length == 3) {
             switch (args[0]) {
                 case "add":
+                    if (!this.api.hasPermission(sender, "wingman.command.add"))
+                        break;
                 case "remove":
-                    try {
-                        int i = Integer.parseInt(args[2]);
-                        completions.add(i + "s");
-                        completions.add(i + "m");
-                        completions.add(i + "h");
-                        completions.add(i + "d");
-                        completions.add(i + "mo");
-                    } catch (NumberFormatException ignore) {
-                    }
+                    if (this.api.hasPermission(sender, "wingman.command.remove"))
+                        break;
+                    if (args[2] == null || args[2].isEmpty())
+                        completions.addAll(Arrays.asList("1", "2", "3", "4", "5", "6", "7", "8", "9"));
+                    else
+                        try {
+                            int i = Integer.parseInt(args[2]);
+                            completions.addAll(Arrays.asList(i + "0", i + "y", i + "mo", i + "d", i + "m", i + "s"));
+                        } catch (NumberFormatException ignore) {
+                        }
                     break;
             }
         }

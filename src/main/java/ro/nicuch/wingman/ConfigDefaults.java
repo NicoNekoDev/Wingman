@@ -32,4 +32,10 @@ public class ConfigDefaults {
     public static final String help_reset = "&f/wman reset <player> &c- &9Resets a player flytime to 0";;
     public static final String help_check = "&f/wman check [player] &c- &9Checks your (or a given player) flytime";
     public static final String help_reload = "&f/npcbook reload &c- &9Reload config file.";
+    public static final String flytime_not_enough = "&cYou don't have enough flytime.";
+    public static final String fly_enabled = "&aYou activated fly.";
+    public static final String fly_disabled = "&cYou dezactivated fly.";
+    public static final String fly_enabled_for_other = "&aYou activated fly for %player_name%.";
+    public static final String fly_disabled_for_other = "&cYou dezactivated fly for %player_name%.";
+    public static final String fly_deactivated = "&cYou run out of flytime!";
 }

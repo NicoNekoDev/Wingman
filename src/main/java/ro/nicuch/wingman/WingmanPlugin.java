@@ -3,6 +3,7 @@ package ro.nicuch.wingman;
 import net.milkbowl.vault.permission.Permission;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.GameMode;
 import org.bukkit.command.TabExecutor;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
@@ -11,6 +12,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import ro.nicuch.wingman.bstats.Metrics;
 
 import java.io.File;
+import java.sql.SQLException;
 
 public class WingmanPlugin extends JavaPlugin {
     private Permission vaultPerms;
@@ -60,6 +62,9 @@ public class WingmanPlugin extends JavaPlugin {
             TabExecutor tabExecutor = new WingmanCommand(this);
             this.getCommand("wingman").setExecutor(tabExecutor);
             this.getCommand("wingman").setTabCompleter(tabExecutor);
+            tabExecutor = new WingmanFlyCommand(this);
+            this.getCommand("fly").setExecutor(tabExecutor);
+            this.getCommand("fly").setTabCompleter(tabExecutor);
             manager.registerEvents(new WingmanListeners(this), this);
             //Update checker, by default enabled
             if (this.settings.getBoolean("update_check", true))
@@ -73,7 +78,16 @@ public class WingmanPlugin extends JavaPlugin {
             this.getLogger().info("============== END LOAD ==============");
             this.setEnabled(false);
         }
+    }
 
+    @Override
+    public void onDisable() {
+        this.api.getPlayerDataForOnlinePlayers().forEach(WingmanPlayerData::save);
+        try {
+            this.api.getConnection().close();
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
     }
 
     public YamlConfiguration getSettings() {
@@ -111,12 +125,14 @@ public class WingmanPlugin extends JavaPlugin {
     private void timer() {
         Bukkit.getScheduler().runTaskTimer(this, () -> this.api.getPlayerDataForOnlinePlayers().forEach(wingmanPlayerData -> {
             Player p = Bukkit.getPlayer(wingmanPlayerData.getPlayerUUID());
-            if (p.isFlying()) {
+            if (p.isFlying() && (p.getGameMode() != GameMode.CREATIVE || p.getGameMode() != GameMode.SPECTATOR) && !this.api.hasPermission(p, "wingman.fly.permanent")) {
                 wingmanPlayerData.tickFlyTime();
-                if (wingmanPlayerData.getFlyTime() > 0) {
-                    this.api.sendAction(p, this.api.secondsToString(wingmanPlayerData.getFlyTime(), this.getMessageNoHeader("lang.flytime_remaining_format", "&a%hours%:%minutes%:%seconds%")));
-                } else {
+                this.api.sendAction(p, this.api.secondsToString(wingmanPlayerData.getFlyTime(), this.getMessageNoHeader("lang.flytime_remaining_format", "&b%total_hours%h:%rounded_minutes%m:%rounded_seconds%s")));
+                if (wingmanPlayerData.getFlyTime() <= 0) {
+                    if (p.getAllowFlight())
+                        p.sendMessage(this.getMessage("lang.fly_deactivated", ConfigDefaults.fly_deactivated));
                     p.setFlying(false);
+                    p.setAllowFlight(false);
                     wingmanPlayerData.setFallProtection();
                     Bukkit.getScheduler().runTaskLater(this, wingmanPlayerData::removeFallProtection, 20 * 10L);
                 }

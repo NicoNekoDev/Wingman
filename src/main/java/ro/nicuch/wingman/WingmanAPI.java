@@ -22,7 +22,7 @@ import java.util.regex.Pattern;
 
 public class WingmanAPI {
     private final Pattern timePattern = Pattern.
-            compile("(?:([0-9]+)\\s*mo[a-z]*[,\\s]*)?" + "(?:([0-9]+)\\s*d[a-z]*[,\\s]*)?" +
+            compile("(?:([0-9]+)\\s*y[a-z]*[,\\s]*)?" + "(?:([0-9]+)\\s*mo[a-z]*[,\\s]*)?" + "(?:([0-9]+)\\s*d[a-z]*[,\\s]*)?" +
                     "(?:([0-9]+)\\s*h[a-z]*[,\\s]*)?" + "(?:([0-9]+)\\s*m[a-z]*[,\\s]*)?" +
                     "(?:([0-9]+)\\s*(?:s[a-z]*)?)?", Pattern.CASE_INSENSITIVE);
 
@@ -108,9 +108,36 @@ public class WingmanAPI {
     }
 
     public String secondsToString(long time, String str) { //str is the text to be formatted
-        return str.replace("%hours%", String.format("%02d", time / 3600))
-                .replace("%minutes%", String.format("%02d", (time % 3600) / 60))
-                .replace("%seconds%", String.format("%02d", ((time % 3600) % 60) % 60));
+        long total_years = time / 31556926;
+        long total_months = time / 2592000; //Rough estimation of a 30 days month
+        long total_days = time / 86400;
+        long total_hours = time / 3600;
+        long total_minutes = time / 60;
+
+        long leftover_years = time % 31556926;
+        long leftover_months = leftover_years % 2592000; //Rough estimation of a 30 days month
+        long leftover_days = leftover_months % 86400;
+        long leftover_minutes = leftover_days % 3600;
+        long leftover_seconds = leftover_minutes % 60;
+
+        long rounded_months = leftover_years / 2592000; //Rough estimation of a 30 days month
+        long rounded_days = leftover_months / 86400;
+        long rounded_hours = leftover_days / 3600;
+        long rounded_minutes = leftover_minutes / 60;
+        long rounded_seconds = leftover_seconds % 60;
+
+        return str
+                .replace("%rounded_months%", String.format("%02d", rounded_months))
+                .replace("%rounded_days%", String.format("%02d", rounded_days))
+                .replace("%rounded_hours%", String.format("%02d", rounded_hours))
+                .replace("%rounded_minutes%", String.format("%02d", rounded_minutes))
+                .replace("%rounded_seconds%", String.format("%02d", rounded_seconds))
+                .replace("%total_years%", String.format("%02d", total_years))
+                .replace("%total_months%", String.format("%02d", total_months))
+                .replace("%total_days%", String.format("%02d", total_days))
+                .replace("%total_hours%", String.format("%02d", total_hours))
+                .replace("%total_minutes%", String.format("%02d", total_minutes))
+                .replace("%total_seconds%", String.format("%02d", time));
     }
 
     public WingmanPlayerData getPlayerData(UUID uuid) {
@@ -157,6 +184,7 @@ public class WingmanAPI {
 
     public long parseDateDiff(String time) {
         Matcher m = this.timePattern.matcher(time);
+        int years = 0;
         int months = 0;
         int days = 0;
         int hours = 0;
@@ -175,23 +203,26 @@ public class WingmanAPI {
             }
             if (found) {
                 if (m.group(1) != null && !m.group(1).isEmpty()) {
-                    months = Integer.parseInt(m.group(1));
+                    years = Integer.parseInt(m.group(1));
                 }
                 if (m.group(2) != null && !m.group(2).isEmpty()) {
-                    days = Integer.parseInt(m.group(2));
+                    months = Integer.parseInt(m.group(2));
                 }
                 if (m.group(3) != null && !m.group(3).isEmpty()) {
-                    hours = Integer.parseInt(m.group(3));
+                    days = Integer.parseInt(m.group(3));
                 }
                 if (m.group(4) != null && !m.group(4).isEmpty()) {
-                    minutes = Integer.parseInt(m.group(4));
+                    hours = Integer.parseInt(m.group(4));
                 }
                 if (m.group(5) != null && !m.group(5).isEmpty()) {
-                    seconds = Integer.parseInt(m.group(5));
+                    minutes = Integer.parseInt(m.group(5));
+                }
+                if (m.group(6) != null && !m.group(6).isEmpty()) {
+                    seconds = Integer.parseInt(m.group(6));
                 }
                 break;
             }
         }
-        return (months * 2592000) + (days * 86400) + (hours * 3600) + (minutes * 60) + seconds;
+        return (years * 31556926) + (months * 2592000) + (days * 86400) + (hours * 3600) + (minutes * 60) + seconds;
     }
 }

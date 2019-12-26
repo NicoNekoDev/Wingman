@@ -19,9 +19,14 @@ lang:
   console_cannot_use_command: "&cOnly players can use this command!"
   new_version_available: "&aA new version of Wingman is available!"
   player_not_found: "&cPlayer not found!"
-  # Placeholders: %hours% , %minutes% , %seconds%
-  flytime_remaining_format: "&aFly time: &b%hours%h:%minutes%m:%seconds%s"
+  flytime_remaining_format: "&aFly time: &b%total_hours%h:%rounded_minutes%m:%rounded_seconds%s"
   flytime_permanent_format: "&aYour fly time is permanent."
+  flytime_not_enough: "&cYou don't have enough flytime."
+  fly_enabled: "&aYou activated fly."
+  fly_disabled: "&cYou dezactivated fly."
+  fly_enabled_for_other: "&aYou activated fly for %player_name%."
+  fly_disabled_for_other: "&cYou dezactivated fly for %player_name%."
+  fly_deactivated: "&cYou run out of flytime!"
 database:
   # Be aware that chaging the type does not convert the values already stored
   # Available values: SQL, MYSQL
