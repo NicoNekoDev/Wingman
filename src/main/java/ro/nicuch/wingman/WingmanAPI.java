@@ -78,7 +78,7 @@ public class WingmanAPI {
                                         "SELECT time FROM " + this.plugin.getSettings().getString("database.table_prefix", "Wingman_") + "flytime WHERE uuid='" + player.getUniqueId().toString() + "';")
                                 .executeQuery();
                         if (!rs.next()) {
-                            this.connection.prepareStatement("INSERT INTO " + this.plugin.getSettings().getString("database.table_prefix", "") + "flytime(uuid, name, time) VALUES('"
+                            this.connection.prepareStatement("INSERT INTO " + this.plugin.getSettings().getString("database.table_prefix", "Wingman_") + "flytime(uuid, name, time) VALUES('"
                                     + player.getName() + "', '" + player.getUniqueId().toString() + "', '" + 0 + "');").executeUpdate();
                             this.online_data.put(player.getUniqueId(), new WingmanPlayerData(player.getUniqueId(), player.getName(), 0));
                         } else
@@ -89,7 +89,7 @@ public class WingmanAPI {
                                         "SELECT time FROM " + this.plugin.getSettings().getString("database.table_prefix", "Wingman_") + "flytime WHERE name='" + player.getName() + "';")
                                 .executeQuery();
                         if (!rs.next()) {
-                            this.connection.prepareStatement("INSERT INTO " + this.plugin.getSettings().getString("database.table_prefix", "") + "flytime(uuid, name, time) VALUES('"
+                            this.connection.prepareStatement("INSERT INTO " + this.plugin.getSettings().getString("database.table_prefix", "Wingman_") + "flytime(uuid, name, time) VALUES('"
                                     + player.getName() + "', '" + player.getUniqueId().toString() + "', '" + 0 + "');").executeUpdate();
                             this.offline_data.put(player.getName(), new WingmanPlayerData(player.getUniqueId(), player.getName(), 0));
                         } else
@@ -108,7 +108,7 @@ public class WingmanAPI {
                                         "SELECT time FROM " + this.plugin.getSettings().getString("database.table_prefix", "Wingman_") + "flytime WHERE uuid='" + player.getUniqueId().toString() + "';")
                                 .executeQuery();
                         if (!rs.next()) {
-                            this.connection.prepareStatement("INSERT INTO " + this.plugin.getSettings().getString("database.table_prefix", "") + "flytime(uuid, name, time) VALUES('"
+                            this.connection.prepareStatement("INSERT INTO " + this.plugin.getSettings().getString("database.table_prefix", "Wingman_") + "flytime(uuid, name, time) VALUES('"
                                     + player.getName() + "', '" + player.getUniqueId().toString() + "', '" + 0 + "');").executeUpdate();
                             this.online_data.put(player.getUniqueId(), new WingmanPlayerData(player.getUniqueId(), player.getName(), 0));
                         } else
@@ -228,7 +228,7 @@ public class WingmanAPI {
             try {
                 ResultSet rs = this.connection
                         .prepareStatement(
-                                "SELECT time FROM " + this.plugin.getSettings().getString("database.table_prefix", "") + "flytime WHERE uuid='" + uuid.toString() + "';")
+                                "SELECT time FROM " + this.plugin.getSettings().getString("database.table_prefix", "Wingman_") + "flytime WHERE uuid='" + uuid.toString() + "';")
                         .executeQuery();
                 if (rs.next())
                     return new WingmanPlayerData(uuid, null, rs.getInt("time"));
@@ -248,7 +248,7 @@ public class WingmanAPI {
             try {
                 ResultSet rs = this.connection
                         .prepareStatement(
-                                "SELECT time FROM " + this.plugin.getSettings().getString("database.table_prefix", "") + "flytime WHERE name='" + name + "';")
+                                "SELECT time FROM " + this.plugin.getSettings().getString("database.table_prefix", "Wingman_") + "flytime WHERE name='" + name + "';")
                         .executeQuery();
                 if (rs.next())
                     return new WingmanPlayerData(null, name, rs.getInt("time"));
