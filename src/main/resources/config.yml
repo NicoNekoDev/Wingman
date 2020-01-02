@@ -12,6 +12,22 @@
 version: 1 # DO NOT CHANGE/REMOVE
 metrics: true
 update_check: true
+settings:
+  # If your server is in offline mode, disable this
+  # Be aware that conversion from offline mode to online mode does not work
+  online-mode: true
+  # If database is called async
+  # It makes the server faster, if your database is not on localhost, but can cause instability
+  async: false
+  # Enable action bar?
+  flytime_actionbar: true
+  # In case of crash, how often (in seconds) to save players flytime to database
+  # If the player disconnect the flytime for that player is saved anyway
+  # Default: 10
+  auto-save: 10
+  # In case the flytime runs out for a player, how many seconds should we protect him from fall damage?
+  # Default: 5
+  fly_dezactivated_falldamage_protection: 5
 lang:
   header: "&f[&6Wingman&f] &r"
   no_permission: "&cYou don''t have permission!"
@@ -19,14 +35,42 @@ lang:
   console_cannot_use_command: "&cOnly players can use this command!"
   new_version_available: "&aA new version of Wingman is available!"
   player_not_found: "&cPlayer not found!"
-  flytime_remaining_format: "&aFly time: &b%total_hours%h:%rounded_minutes%m:%rounded_seconds%s"
-  flytime_permanent_format: "&aYour fly time is permanent."
+  flytime_check: "&aFlytime left: &b%total_hours%h:%rounded_minutes%m:%rounded_seconds%s"
+  flytime_remaining_format: "&aFlytime left: &b%total_hours%h:%rounded_minutes%m:%rounded_seconds%s"
+  flytime_permanent_format: "&aYour flytime is permanent."
   flytime_not_enough: "&cYou don't have enough flytime."
   fly_enabled: "&aYou activated fly."
   fly_disabled: "&cYou dezactivated fly."
   fly_enabled_for_other: "&aYou activated fly for %player_name%."
   fly_disabled_for_other: "&cYou dezactivated fly for %player_name%."
   fly_deactivated: "&cYou run out of flytime!"
+  flytime_set_success: "&aThe time has been added!"
+  flytime_remove_success: "&aThe time has been removed!"
+  flytime_reset_success: "The time has been reseted!"
+  usage:
+    add: "&f&oUsage&f: &6/wman add <player> <time>"
+    remove: "&f&oUsage&f: &6/wman remove <player> <time>"
+    reset: "&f&oUsage&f: &6/wman reset <player/*/**> [time]"
+    check: "&f&oUsage&f: &6/wman check [player] &8or &6/flytime [player]"
+    fly: "&f&oUsage&f: &f/fly [player] [on/off]"
+  help:
+    - "&m        &f[&6Wingman Help&f]&m        "
+    - "&8> &6/wman about"
+    - "&f&oInformations about plugin"
+    - "&8> &6/wman add <player> <time>"
+    - "&f&oAdds flytime to a player"
+    - "&8> &6/wman remove <player> <time>"
+    - "&f&oRemoves flytime of a player"
+    - "&8> &6/wman reset <player/*/**> [time]"
+    - "&f&oResets a player (* for all online players, ** for all online and offline players) flytime to 0 (or the given time)"
+    - "&8> &6/wman check [player] &8or &6/flytime [player]"
+    - "&f&oChecks your (or a given player) flytime"
+    - "&8> &6/wman reload"
+    - "&f&oReload the config file"
+    - "&8> &6/fly [player] [on/off]"
+    - "&f&oToggle fly for you (or a give player)"
+    - "&m                                      "
+
 database:
   # Be aware that chaging the type does not convert the values already stored
   # Available values: SQL, MYSQL

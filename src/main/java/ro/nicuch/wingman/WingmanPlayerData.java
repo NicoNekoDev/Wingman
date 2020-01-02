@@ -9,16 +9,22 @@ import java.util.UUID;
 public class WingmanPlayerData {
 
     private final UUID uuid;
+    private final String name;
     private long flyTime;
     private boolean fallProtection;
 
-    public WingmanPlayerData(UUID uuid, int flyTime) {
+    public WingmanPlayerData(UUID uuid, String name, int flyTime) {
         this.uuid = uuid;
+        this.name = name;
         this.flyTime = flyTime;
     }
 
     public UUID getPlayerUUID() {
         return this.uuid;
+    }
+
+    public String getPlayerName() {
+        return this.name;
     }
 
     public long getFlyTime() {
@@ -56,7 +62,10 @@ public class WingmanPlayerData {
     protected void save() {
         WingmanPlugin plugin = ((WingmanPlugin) Bukkit.getPluginManager().getPlugin("Wingman"));
         try {
-            plugin.getAPI().getConnection().prepareStatement("UPDATE " + plugin.getSettings().getString("database.table_prefix", "") + "flytime SET time='" + this.flyTime + "' WHERE uuid='" + this.uuid.toString() + "';").executeUpdate();
+            if (plugin.getSettings().getBoolean("settings.online-mode", true))
+                plugin.getAPI().getConnection().prepareStatement("UPDATE " + plugin.getSettings().getString("database.table_prefix", "") + "flytime SET time='" + this.flyTime + "' WHERE uuid='" + this.uuid.toString() + "';").executeUpdate();
+            else
+                plugin.getAPI().getConnection().prepareStatement("UPDATE " + plugin.getSettings().getString("database.table_prefix", "") + "flytime SET time='" + this.flyTime + "' WHERE name='" + this.name + "';").executeUpdate();
         } catch (SQLException ex) {
             ex.printStackTrace();
         }

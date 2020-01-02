@@ -1,6 +1,7 @@
 package ro.nicuch.wingman;
 
 import org.bukkit.entity.EntityType;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageEvent;
@@ -16,11 +17,13 @@ public class WingmanListeners implements Listener {
 
     @EventHandler
     public void joinEvent(PlayerJoinEvent event) {
-        if (this.api.loadPlayerData(event.getPlayer()))
-            if (this.api.getPlayerData(event.getPlayer()).getFlyTime() > 0) {
+        this.api.loadPlayerData(event.getPlayer());
+        if (this.api.getPlayerData(event.getPlayer()).getFlyTime() > 0) {
+            if (!event.getPlayer().isOnGround()) {
                 event.getPlayer().setAllowFlight(true);
                 event.getPlayer().setFlying(true);
             }
+        }
     }
 
     @EventHandler
@@ -31,7 +34,7 @@ public class WingmanListeners implements Listener {
     @EventHandler
     public void fallDamageEvent(EntityDamageEvent event) {
         if (event.getEntityType() == EntityType.PLAYER && event.getCause() == EntityDamageEvent.DamageCause.FALL) {
-            WingmanPlayerData data = this.api.getPlayerData(event.getEntity().getUniqueId());
+            WingmanPlayerData data = this.api.getPlayerData((Player) event.getEntity());
             if (data.hasFallProtection())
                 event.setCancelled(true);
         }

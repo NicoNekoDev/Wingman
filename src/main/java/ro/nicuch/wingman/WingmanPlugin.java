@@ -13,6 +13,8 @@ import ro.nicuch.wingman.bstats.Metrics;
 
 import java.io.File;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class WingmanPlugin extends JavaPlugin {
     private Permission vaultPerms;
@@ -82,7 +84,10 @@ public class WingmanPlugin extends JavaPlugin {
 
     @Override
     public void onDisable() {
-        this.api.getPlayerDataForOnlinePlayers().forEach(WingmanPlayerData::save);
+        if (this.getSettings().getBoolean("settings.online-mode", true))
+            this.api.getAllDataForOnline().forEach(WingmanPlayerData::save);
+        else
+            this.api.getAllDataForOffline().forEach(WingmanPlayerData::save);
         try {
             this.api.getConnection().close();
         } catch (SQLException ex) {
@@ -123,25 +128,52 @@ public class WingmanPlugin extends JavaPlugin {
     }
 
     private void timer() {
-        Bukkit.getScheduler().runTaskTimer(this, () -> this.api.getPlayerDataForOnlinePlayers().forEach(wingmanPlayerData -> {
-            Player p = Bukkit.getPlayer(wingmanPlayerData.getPlayerUUID());
-            if (p.isFlying() && (p.getGameMode() != GameMode.CREATIVE || p.getGameMode() != GameMode.SPECTATOR) && !this.api.hasPermission(p, "wingman.fly.permanent")) {
-                wingmanPlayerData.tickFlyTime();
-                this.api.sendAction(p, this.api.secondsToString(wingmanPlayerData.getFlyTime(), this.getMessageNoHeader("lang.flytime_remaining_format", "&b%total_hours%h:%rounded_minutes%m:%rounded_seconds%s")));
-                if (wingmanPlayerData.getFlyTime() <= 0) {
-                    if (p.getAllowFlight())
-                        p.sendMessage(this.getMessage("lang.fly_deactivated", ConfigDefaults.fly_deactivated));
-                    p.setFlying(false);
-                    p.setAllowFlight(false);
-                    wingmanPlayerData.setFallProtection();
-                    Bukkit.getScheduler().runTaskLater(this, wingmanPlayerData::removeFallProtection, 20 * 10L);
-                }
+        Bukkit.getScheduler().runTaskTimer(this, () -> {
+            if (this.getSettings().getBoolean("settings.online-mode", true)) {
+                this.api.getAllDataForOnline().forEach(wingmanPlayerData -> {
+                    Player p = Bukkit.getPlayer(wingmanPlayerData.getPlayerUUID());
+                    if (p.isFlying() && (p.getGameMode() != GameMode.CREATIVE || p.getGameMode() != GameMode.SPECTATOR) && !this.api.hasPermission(p, "wingman.fly.permanent")) {
+                        wingmanPlayerData.tickFlyTime();
+                        this.api.sendActionBar(p, this.api.secondsToString(wingmanPlayerData.getFlyTime(), this.getMessageNoHeader("lang.flytime_remaining_format", ConfigDefaults.flytime_remaining_format)));
+                        if (wingmanPlayerData.getFlyTime() <= 0) {
+                            if (p.getAllowFlight())
+                                p.sendMessage(this.getMessage("lang.fly_deactivated", ConfigDefaults.fly_deactivated));
+                            p.setFlying(false);
+                            p.setAllowFlight(false);
+                            wingmanPlayerData.setFallProtection();
+                            Bukkit.getScheduler().runTaskLater(this, wingmanPlayerData::removeFallProtection, 20 * 10L);
+                        }
+                    }
+                });
+            } else {
+                this.api.getAllDataForOffline().forEach(wingmanPlayerData -> {
+                    Player p = Bukkit.getPlayer(wingmanPlayerData.getPlayerName());
+                    if (p.isFlying() && (p.getGameMode() != GameMode.CREATIVE || p.getGameMode() != GameMode.SPECTATOR) && !this.api.hasPermission(p, "wingman.fly.permanent")) {
+                        wingmanPlayerData.tickFlyTime();
+                        this.api.sendActionBar(p, this.api.secondsToString(wingmanPlayerData.getFlyTime(), this.getMessageNoHeader("lang.flytime_remaining_format", ConfigDefaults.flytime_remaining_format)));
+                        if (wingmanPlayerData.getFlyTime() <= 0) {
+                            if (p.getAllowFlight())
+                                p.sendMessage(this.getMessage("lang.fly_deactivated", ConfigDefaults.fly_deactivated));
+                            p.setFlying(false);
+                            p.setAllowFlight(false);
+                            wingmanPlayerData.setFallProtection();
+                            Bukkit.getScheduler().runTaskLater(this, wingmanPlayerData::removeFallProtection, 20 * 10L);
+                        }
+                    }
+                });
             }
-        }), 20, 20);
+        }, 20, 20);
     }
 
     private void autoSaver() {
-        Bukkit.getScheduler().runTaskTimer(this, () -> this.api.getPlayerDataForOnlinePlayers().forEach(WingmanPlayerData::save), 20 * 10, 20 * 10);
+        int auto_save = this.getSettings().getInt("settings.auto-save", 10);
+        Bukkit.getScheduler().runTaskTimer(this, () -> {
+            if (this.getSettings().getBoolean("settings.online-mode", true)) {
+                this.api.getAllDataForOnline().forEach(WingmanPlayerData::save);
+            } else {
+                this.api.getAllDataForOffline().forEach(WingmanPlayerData::save);
+            }
+        }, 20L * auto_save, 20L * auto_save);
     }
 
     public String getMessage(String path, String def) {
@@ -150,8 +182,24 @@ public class WingmanPlugin extends JavaPlugin {
                 + ChatColor.translateAlternateColorCodes('&', this.settings.getString(path, def));
     }
 
+    public List<String> getMessage(String path, List<String> def) {
+        List<String> to_return = new ArrayList<>();
+        for (String str : (this.settings.isList(path) ? this.settings.getStringList(path) : def))
+            to_return.add(ChatColor.translateAlternateColorCodes('&',
+                    this.settings.getString("lang.header", ConfigDefaults.header))
+                    + ChatColor.translateAlternateColorCodes('&', str));
+        return to_return;
+    }
+
     public String getMessageNoHeader(String path, String def) {
         return ChatColor.translateAlternateColorCodes('&', this.settings.getString(path, def));
+    }
+
+    public List<String> getMessageNoHeader(String path, List<String> def) {
+        List<String> to_return = new ArrayList<>();
+        for (String str : (this.settings.isList(path) ? this.settings.getStringList(path) : def))
+            to_return.add(ChatColor.translateAlternateColorCodes('&', str));
+        return to_return;
     }
 
     /*
@@ -159,7 +207,7 @@ public class WingmanPlugin extends JavaPlugin {
      */
     public void printError(Exception ex) {
         this.getLogger().severe("A severe error has occurred with Wingman.");
-        this.getLogger().severe("If you cannot figure out this error on your own (e.g. a config error) please copy and paste everything from here to END ERROR and post it at https://github.com/nicuch/CitizensBooks/issues.");
+        this.getLogger().severe("If you cannot figure out this error on your own (e.g. a config error) please copy and paste everything from here to END ERROR and post it at https://github.com/nicuch/Wingman/issues.");
         this.getLogger().severe("");
         this.getLogger().severe("============== BEGIN ERROR ==============");
         this.getLogger().severe("PLUGIN VERSION: Wingman " + getDescription().getVersion());

@@ -28,7 +28,8 @@ public class WingmanAPI {
 
     private Connection connection;
     private final WingmanPlugin plugin;
-    private final Map<UUID, WingmanPlayerData> data = new HashMap<>();
+    private final Map<UUID, WingmanPlayerData> online_data = new HashMap<>();
+    private final Map<String, WingmanPlayerData> offline_data = new HashMap<>();
 
     public WingmanAPI(WingmanPlugin plugin) {
         this.plugin = plugin;
@@ -67,41 +68,121 @@ public class WingmanAPI {
         return this.connection;
     }
 
-    protected boolean loadPlayerData(Player player) {
-        try {
-            ResultSet rs = this.connection
-                    .prepareStatement(
-                            "SELECT time FROM " + this.plugin.getSettings().getString("database.table_prefix", "") + "flytime WHERE uuid='" + player.getUniqueId().toString() + "';")
-                    .executeQuery();
-            if (!rs.next()) {
-                this.connection.prepareStatement("INSERT INTO " + this.plugin.getSettings().getString("database.table_prefix", "") + "flytime(uuid, time) VALUES('"
-                        + player.getUniqueId().toString() + "', '" + 0 + "');").executeUpdate();
-                this.data.put(player.getUniqueId(), new WingmanPlayerData(player.getUniqueId(), 0));
-            } else
-                this.data.put(player.getUniqueId(), new WingmanPlayerData(player.getUniqueId(), rs.getInt("time")));
-            return true;
-        } catch (SQLException ex) {
-            ex.printStackTrace();
-            return false;
+    protected void loadPlayerData(Player player) {
+        if (this.plugin.getSettings().getBoolean("settings.async", true)) {
+            Bukkit.getScheduler().runTaskAsynchronously(this.plugin, () -> {
+                try {
+                    if (this.plugin.getSettings().getBoolean("settings.online-mode", true)) {
+                        ResultSet rs = this.connection
+                                .prepareStatement(
+                                        "SELECT time FROM " + this.plugin.getSettings().getString("database.table_prefix", "Wingman_") + "flytime WHERE uuid='" + player.getUniqueId().toString() + "';")
+                                .executeQuery();
+                        if (!rs.next()) {
+                            this.connection.prepareStatement("INSERT INTO " + this.plugin.getSettings().getString("database.table_prefix", "") + "flytime(uuid, name, time) VALUES('"
+                                    + player.getName() + "', '" + player.getUniqueId().toString() + "', '" + 0 + "');").executeUpdate();
+                            this.online_data.put(player.getUniqueId(), new WingmanPlayerData(player.getUniqueId(), player.getName(), 0));
+                        } else
+                            this.online_data.put(player.getUniqueId(), new WingmanPlayerData(player.getUniqueId(), player.getName(), rs.getInt("time")));
+                    } else {
+                        ResultSet rs = this.connection
+                                .prepareStatement(
+                                        "SELECT time FROM " + this.plugin.getSettings().getString("database.table_prefix", "Wingman_") + "flytime WHERE name='" + player.getName() + "';")
+                                .executeQuery();
+                        if (!rs.next()) {
+                            this.connection.prepareStatement("INSERT INTO " + this.plugin.getSettings().getString("database.table_prefix", "") + "flytime(uuid, name, time) VALUES('"
+                                    + player.getName() + "', '" + player.getUniqueId().toString() + "', '" + 0 + "');").executeUpdate();
+                            this.offline_data.put(player.getName(), new WingmanPlayerData(player.getUniqueId(), player.getName(), 0));
+                        } else
+                            this.offline_data.put(player.getName(), new WingmanPlayerData(player.getUniqueId(), player.getName(), rs.getInt("time")));
+                    }
+                } catch (SQLException ex) {
+                    ex.printStackTrace();
+                }
+            });
+        } else {
+            Bukkit.getScheduler().runTask(this.plugin, () -> {
+                try {
+                    if (this.plugin.getSettings().getBoolean("settings.online-mode", true)) {
+                        ResultSet rs = this.connection
+                                .prepareStatement(
+                                        "SELECT time FROM " + this.plugin.getSettings().getString("database.table_prefix", "Wingman_") + "flytime WHERE uuid='" + player.getUniqueId().toString() + "';")
+                                .executeQuery();
+                        if (!rs.next()) {
+                            this.connection.prepareStatement("INSERT INTO " + this.plugin.getSettings().getString("database.table_prefix", "") + "flytime(uuid, name, time) VALUES('"
+                                    + player.getName() + "', '" + player.getUniqueId().toString() + "', '" + 0 + "');").executeUpdate();
+                            this.online_data.put(player.getUniqueId(), new WingmanPlayerData(player.getUniqueId(), player.getName(), 0));
+                        } else
+                            this.online_data.put(player.getUniqueId(), new WingmanPlayerData(player.getUniqueId(), player.getName(), rs.getInt("time")));
+                    } else {
+                        ResultSet rs = this.connection
+                                .prepareStatement(
+                                        "SELECT time FROM " + this.plugin.getSettings().getString("database.table_prefix", "Wingman_") + "flytime WHERE name='" + player.getName() + "';")
+                                .executeQuery();
+                        if (!rs.next()) {
+                            this.connection.prepareStatement("INSERT INTO " + this.plugin.getSettings().getString("database.table_prefix", "") + "flytime(uuid, name, time) VALUES('"
+                                    + player.getName() + "', '" + player.getUniqueId().toString() + "', '" + 0 + "');").executeUpdate();
+                            this.offline_data.put(player.getName(), new WingmanPlayerData(player.getUniqueId(), player.getName(), 0));
+                        } else
+                            this.offline_data.put(player.getName(), new WingmanPlayerData(player.getUniqueId(), player.getName(), rs.getInt("time")));
+                    }
+                } catch (SQLException ex) {
+                    ex.printStackTrace();
+                }
+            });
         }
     }
 
-    protected boolean unloadPlayerData(Player player) {
-        WingmanPlayerData playerData = this.data.get(player.getUniqueId());
-        try {
-            this.connection.prepareStatement("UPDATE " + plugin.getSettings().getString("database.table_prefix", "") + "flytime SET time='" + playerData.getFlyTime() + "' WHERE uuid='" + player.getUniqueId().toString() + "';").executeUpdate();
-            this.data.remove(player.getUniqueId());
-            return true;
-        } catch (SQLException ex) {
-            ex.printStackTrace();
-            this.data.remove(player.getUniqueId());
-            return false;
+    protected void unloadPlayerData(Player player) {
+        if (this.plugin.getSettings().getBoolean("settings.async", true)) {
+            Bukkit.getScheduler().runTaskAsynchronously(this.plugin, () -> {
+                WingmanPlayerData playerData;
+                if (this.plugin.getSettings().getBoolean("settings.online-mode", true)) {
+                    playerData = this.online_data.get(player.getUniqueId());
+                    try {
+                        this.connection.prepareStatement("UPDATE " + plugin.getSettings().getString("database.table_prefix", "Wingman_") + "flytime SET time='" + playerData.getFlyTime() + "' WHERE uuid='" + player.getUniqueId() + "';").executeUpdate();
+                        this.online_data.remove(player.getUniqueId());
+                    } catch (SQLException ex) {
+                        ex.printStackTrace();
+                    }
+                } else {
+                    playerData = this.offline_data.get(player.getName());
+                    try {
+                        this.connection.prepareStatement("UPDATE " + plugin.getSettings().getString("database.table_prefix", "Wingman_") + "flytime SET time='" + playerData.getFlyTime() + "' WHERE name='" + player.getName() + "';").executeUpdate();
+                        this.offline_data.remove(player.getName());
+                    } catch (SQLException ex) {
+                        ex.printStackTrace();
+                    }
+                }
+            });
+        } else {
+            Bukkit.getScheduler().runTaskAsynchronously(this.plugin, () -> {
+                WingmanPlayerData playerData;
+                if (this.plugin.getSettings().getBoolean("settings.online-mode", true)) {
+                    playerData = this.online_data.get(player.getUniqueId());
+                    try {
+                        this.connection.prepareStatement("UPDATE " + plugin.getSettings().getString("database.table_prefix", "Wingman_") + "flytime SET time='" + playerData.getFlyTime() + "' WHERE uuid='" + player.getUniqueId() + "';").executeUpdate();
+                        this.online_data.remove(player.getUniqueId());
+                    } catch (SQLException ex) {
+                        ex.printStackTrace();
+                    }
+                } else {
+                    playerData = this.offline_data.get(player.getName());
+                    try {
+                        this.connection.prepareStatement("UPDATE " + plugin.getSettings().getString("database.table_prefix", "Wingman_") + "flytime SET time='" + playerData.getFlyTime() + "' WHERE name='" + player.getName() + "';").executeUpdate();
+                        this.offline_data.remove(player.getName());
+                    } catch (SQLException ex) {
+                        ex.printStackTrace();
+                    }
+                }
+            });
         }
+
+
     }
 
     protected boolean hasPermission(CommandSender sender, String permission) {
         if (sender instanceof Player) {
-            Optional<Permission> vaultPerms = this.plugin.useVault() ? Optional.of(this.plugin.getVaultPerms()) : Optional.empty(); //If vault not enabled or luckperms is used, this will return empty
+            Optional<Permission> vaultPerms = this.plugin.useVault() ? Optional.of(this.plugin.getVaultPerms()) : Optional.empty(); //If vault not enabled this will return empty
             return (vaultPerms.isPresent() && vaultPerms.get().has(sender, permission)) || sender.hasPermission(permission);
         }
         return true;
@@ -140,18 +221,38 @@ public class WingmanAPI {
                 .replace("%total_seconds%", String.format("%02d", time));
     }
 
-    public WingmanPlayerData getPlayerData(UUID uuid) {
-        if (this.data.containsKey(uuid))
-            return this.data.get(uuid);
+    public WingmanPlayerData getPlayerDataOnline(UUID uuid) {
+        if (this.online_data.containsKey(uuid))
+            return this.online_data.get(uuid);
         else {
             try {
                 ResultSet rs = this.connection
                         .prepareStatement(
                                 "SELECT time FROM " + this.plugin.getSettings().getString("database.table_prefix", "") + "flytime WHERE uuid='" + uuid.toString() + "';")
                         .executeQuery();
-                if (rs.next()) {
-                    return new WingmanPlayerData(uuid, rs.getInt("time"));
-                } else
+                if (rs.next())
+                    return new WingmanPlayerData(uuid, null, rs.getInt("time"));
+                else
+                    return null;
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+                return null;
+            }
+        }
+    }
+
+    public WingmanPlayerData getPlayerDataOffline(String name) {
+        if (this.offline_data.containsKey(name))
+            return this.offline_data.get(name);
+        else {
+            try {
+                ResultSet rs = this.connection
+                        .prepareStatement(
+                                "SELECT time FROM " + this.plugin.getSettings().getString("database.table_prefix", "") + "flytime WHERE name='" + name + "';")
+                        .executeQuery();
+                if (rs.next())
+                    return new WingmanPlayerData(null, name, rs.getInt("time"));
+                else
                     return null;
             } catch (SQLException ex) {
                 ex.printStackTrace();
@@ -161,27 +262,28 @@ public class WingmanAPI {
     }
 
     public WingmanPlayerData getPlayerData(OfflinePlayer player) {
-        return this.getPlayerData(player.getUniqueId());
+        return this.plugin.getSettings().getBoolean("settings.online-mode", true) ? this.getPlayerDataOnline(player.getUniqueId()) : this.getPlayerDataOffline(player.getName());
     }
 
-    public Set<WingmanPlayerData> getPlayerDataForOnlinePlayers() {
-        return new HashSet<>(this.data.values());
+    public Set<WingmanPlayerData> getAllDataForOnline() {
+        return new HashSet<>(this.online_data.values());
     }
 
-    private Class<?> getNmsClass(String nmsClassName) throws ClassNotFoundException {
-        return Class.forName("net.minecraft.server." + Bukkit.getServer().getClass().getPackage().getName().replace(".", ",").split(",")[3] + "." + nmsClassName);
+    public Set<WingmanPlayerData> getAllDataForOffline() {
+        return new HashSet<>(this.offline_data.values());
     }
 
-    private String getServerVersion() {
-        return Bukkit.getServer().getClass().getPackage().getName().substring(23);
-    }
 
-    protected void sendAction(Player p, String msg) {
+    //TODO 1.8 to 1.15
+    protected void sendActionBar(Player p, String msg) {
+        if (!this.plugin.getSettings().getBoolean("settings.flytime_actionbar", true))
+            return;
         IChatBaseComponent cs = IChatBaseComponent.ChatSerializer.a("{\"text\": \"" + msg + "\"}");
         PacketPlayOutChat ppoc = new PacketPlayOutChat(cs, ChatMessageType.GAME_INFO);
         ((CraftPlayer) p).getHandle().playerConnection.sendPacket(ppoc);
     }
 
+    // Using Essentials Date parser
     public long parseDateDiff(String time) {
         Matcher m = this.timePattern.matcher(time);
         int years = 0;

@@ -31,16 +31,16 @@ public class WingmanCommand implements TabExecutor {
                         if (args.length > 2) {
                             Optional<OfflinePlayer> offlinePlayer = Optional.ofNullable(Bukkit.getOfflinePlayer(args[1]));
                             if (offlinePlayer.isPresent()) {
-                                Optional<WingmanPlayerData> data = Optional.ofNullable(this.api.getPlayerData(offlinePlayer.get().getUniqueId()));
+                                Optional<WingmanPlayerData> data = Optional.ofNullable(this.api.getPlayerData(offlinePlayer.get()));
                                 if (data.isPresent()) {
                                     data.get().addFlyTime(this.api.parseDateDiff(args[2]));
-                                    sender.sendMessage(this.plugin.getMessage("lang.time_set_success", "The time has been added!"));
+                                    sender.sendMessage(this.plugin.getMessage("lang.flytime_set_success", ConfigDefaults.flytime_set_success));
                                 } else
                                     sender.sendMessage(this.plugin.getMessage("lang.player_not_found", ConfigDefaults.player_not_found));
                             } else
                                 sender.sendMessage(this.plugin.getMessage("lang.player_not_found", ConfigDefaults.player_not_found));
                         } else
-                            sender.sendMessage(this.plugin.getMessage("help.add", ConfigDefaults.help_add));
+                            sender.sendMessage(this.plugin.getMessage("help.usage.add", ConfigDefaults.usage_add));
                     } else
                         sender.sendMessage(this.plugin.getMessage("lang.no_permission", ConfigDefaults.no_permission));
                     break;
@@ -49,16 +49,16 @@ public class WingmanCommand implements TabExecutor {
                         if (args.length > 2) {
                             Optional<OfflinePlayer> offlinePlayer = Optional.ofNullable(Bukkit.getOfflinePlayer(args[1]));
                             if (offlinePlayer.isPresent()) {
-                                Optional<WingmanPlayerData> data = Optional.ofNullable(this.api.getPlayerData(offlinePlayer.get().getUniqueId()));
+                                Optional<WingmanPlayerData> data = Optional.ofNullable(this.api.getPlayerData(offlinePlayer.get()));
                                 if (data.isPresent()) {
                                     data.get().removeFlyTime(this.api.parseDateDiff(args[2]));
-                                    sender.sendMessage(this.plugin.getMessage("lang.time_remove_success", "The time has been removed!"));
+                                    sender.sendMessage(this.plugin.getMessage("lang.flytime_remove_success", ConfigDefaults.flytime_remove_success));
                                 } else
                                     sender.sendMessage(this.plugin.getMessage("lang.player_not_found", ConfigDefaults.player_not_found));
                             } else
                                 sender.sendMessage(this.plugin.getMessage("lang.player_not_found", ConfigDefaults.player_not_found));
                         } else
-                            sender.sendMessage(this.plugin.getMessage("help.remove", ConfigDefaults.help_remove));
+                            sender.sendMessage(this.plugin.getMessage("help.usage.remove", ConfigDefaults.usage_remove));
                     } else
                         sender.sendMessage(this.plugin.getMessage("lang.no_permission", ConfigDefaults.no_permission));
                     break;
@@ -67,16 +67,16 @@ public class WingmanCommand implements TabExecutor {
                         if (args.length > 1) {
                             Optional<OfflinePlayer> offlinePlayer = Optional.ofNullable(Bukkit.getOfflinePlayer(args[1]));
                             if (offlinePlayer.isPresent()) {
-                                Optional<WingmanPlayerData> data = Optional.ofNullable(this.api.getPlayerData(offlinePlayer.get().getUniqueId()));
+                                Optional<WingmanPlayerData> data = Optional.ofNullable(this.api.getPlayerData(offlinePlayer.get()));
                                 if (data.isPresent()) {
                                     data.get().resetFlyTime();
-                                    sender.sendMessage(this.plugin.getMessage("lang.time_reset_success", "The time has been reseted!"));
+                                    sender.sendMessage(this.plugin.getMessage("lang.flytime_reset_success", ConfigDefaults.flytime_reset_success));
                                 } else
                                     sender.sendMessage(this.plugin.getMessage("lang.player_not_found", ConfigDefaults.player_not_found));
                             } else
                                 sender.sendMessage(this.plugin.getMessage("lang.player_not_found", ConfigDefaults.player_not_found));
                         } else
-                            sender.sendMessage(this.plugin.getMessage("help.reset", ConfigDefaults.help_reset));
+                            sender.sendMessage(this.plugin.getMessage("help.usage.reset", ConfigDefaults.usage_reset));
                     } else
                         sender.sendMessage(this.plugin.getMessage("lang.no_permission", ConfigDefaults.no_permission));
                     break;
@@ -86,19 +86,18 @@ public class WingmanCommand implements TabExecutor {
                             if (this.api.hasPermission(sender, "wingman.command.check.other")) {
                                 Optional<OfflinePlayer> offlinePlayer = Optional.ofNullable(Bukkit.getOfflinePlayer(args[1]));
                                 if (offlinePlayer.isPresent()) {
-                                    Optional<WingmanPlayerData> data = Optional.ofNullable(this.api.getPlayerData(offlinePlayer.get().getUniqueId()));
-                                    if (data.isPresent()) {
-                                        data.get().resetFlyTime();
-                                        sender.sendMessage(this.plugin.getMessage("lang.time_reset_success", "The time has been reseted!"));
-                                    } else
+                                    Optional<WingmanPlayerData> data = Optional.ofNullable(this.api.getPlayerData(offlinePlayer.get()));
+                                    if (data.isPresent())
+                                        sender.sendMessage(this.api.secondsToString(data.get().getFlyTime(), this.plugin.getMessage("lang.flytime_check", ConfigDefaults.flytime_check)));
+                                    else
                                         sender.sendMessage(this.plugin.getMessage("lang.player_not_found", ConfigDefaults.player_not_found));
                                 } else
                                     sender.sendMessage(this.plugin.getMessage("lang.player_not_found", ConfigDefaults.player_not_found));
                             } else
                                 sender.sendMessage(this.plugin.getMessage("lang.no_permission", ConfigDefaults.no_permission));
                         } else {
-                            WingmanPlayerData data = this.api.getPlayerData(((Player) sender).getUniqueId());
-                            sender.sendMessage(this.api.secondsToString(data.getFlyTime(), this.plugin.getMessage("lang.flytime_remaining_format", "&a%hours%:%minutes%:%seconds%")));
+                            WingmanPlayerData data = this.api.getPlayerData((Player) sender);
+                            sender.sendMessage(this.api.secondsToString(data.getFlyTime(), this.plugin.getMessage("lang.flytime_check", ConfigDefaults.flytime_check)));
                         }
                     } else
                         sender.sendMessage(this.plugin.getMessage("lang.no_permission", ConfigDefaults.no_permission));
@@ -142,16 +141,15 @@ public class WingmanCommand implements TabExecutor {
                     if (!this.api.hasPermission(sender, "wingman.command.add"))
                         break;
                 case "remove":
-                    if (this.api.hasPermission(sender, "wingman.command.remove"))
+                    if (!this.api.hasPermission(sender, "wingman.command.remove"))
                         break;
                 case "reset":
-                    if (this.api.hasPermission(sender, "wingman.command.reset"))
+                    if (!this.api.hasPermission(sender, "wingman.command.reset"))
                         break;
                 case "check":
-                    if (this.api.hasPermission(sender, "wingman.command.check"))
+                    if (!this.api.hasPermission(sender, "wingman.command.check"))
                         break;
                     Bukkit.getOnlinePlayers().forEach(p -> commands.add(p.getName()));
-                    break;
             }
             StringUtil.copyPartialMatches(args[1], commands, completions);
         } else if (args.length == 3) {
@@ -160,7 +158,7 @@ public class WingmanCommand implements TabExecutor {
                     if (!this.api.hasPermission(sender, "wingman.command.add"))
                         break;
                 case "remove":
-                    if (this.api.hasPermission(sender, "wingman.command.remove"))
+                    if (!this.api.hasPermission(sender, "wingman.command.remove"))
                         break;
                     if (args[2] == null || args[2].isEmpty())
                         completions.addAll(Arrays.asList("1", "2", "3", "4", "5", "6", "7", "8", "9"));
@@ -188,15 +186,7 @@ public class WingmanCommand implements TabExecutor {
     }
 
     private void sendHelp(CommandSender sender) {
-        sender.sendMessage(ChatColor.GRAY + "" + ChatColor.STRIKETHROUGH + "+----------------------+");
-        sender.sendMessage("");
-        sender.sendMessage(this.plugin.getMessageNoHeader("lang.help.about", ConfigDefaults.help_about));
-        sender.sendMessage(this.plugin.getMessageNoHeader("lang.help.set", ConfigDefaults.help_add));
-        sender.sendMessage(this.plugin.getMessageNoHeader("lang.help.remove", ConfigDefaults.help_remove));
-        sender.sendMessage(this.plugin.getMessageNoHeader("lang.help.reset", ConfigDefaults.help_reset));
-        sender.sendMessage(this.plugin.getMessageNoHeader("lang.help.check", ConfigDefaults.help_check));
-        sender.sendMessage(this.plugin.getMessageNoHeader("lang.help.reload", ConfigDefaults.help_reload));
-        sender.sendMessage("");
-        sender.sendMessage(ChatColor.GRAY + "" + ChatColor.STRIKETHROUGH + "+----------------------+");
+        for (String str : this.plugin.getMessageNoHeader("lang.help", ConfigDefaults.help))
+            sender.sendMessage(str);
     }
 }
