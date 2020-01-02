@@ -63,9 +63,9 @@ public class WingmanPlayerData {
         WingmanPlugin plugin = ((WingmanPlugin) Bukkit.getPluginManager().getPlugin("Wingman"));
         try {
             if (plugin.getSettings().getBoolean("settings.online-mode", true))
-                plugin.getAPI().getConnection().prepareStatement("UPDATE " + plugin.getSettings().getString("database.table_prefix", "") + "flytime SET time='" + this.flyTime + "' WHERE uuid='" + this.uuid.toString() + "';").executeUpdate();
+                plugin.getAPI().getConnection().prepareStatement("UPDATE " + plugin.getSettings().getString("database.table_prefix", "Wingman_") + "flytime SET time='" + this.flyTime + "' WHERE uuid='" + this.uuid.toString() + "';").executeUpdate();
             else
-                plugin.getAPI().getConnection().prepareStatement("UPDATE " + plugin.getSettings().getString("database.table_prefix", "") + "flytime SET time='" + this.flyTime + "' WHERE name='" + this.name + "';").executeUpdate();
+                plugin.getAPI().getConnection().prepareStatement("UPDATE " + plugin.getSettings().getString("database.table_prefix", "Wingman_") + "flytime SET time='" + this.flyTime + "' WHERE name='" + this.name + "';").executeUpdate();
         } catch (SQLException ex) {
             ex.printStackTrace();
         }
