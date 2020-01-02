@@ -33,7 +33,7 @@ import java.net.URL;
 
 public class UpdateChecker implements Listener {
     private final WingmanPlugin plugin;
-    private final int resourceId = 37465;
+    private final int resourceId = 73975;
     private String latestVersion;
     private boolean updateAvailable;
 
@@ -47,8 +47,8 @@ public class UpdateChecker implements Listener {
             //Checking for updates
             if (this.checkForUpdate()) {
                 Bukkit.getScheduler().runTask(this.plugin, () -> {
-                    this.plugin.getLogger().info("An update for CitizensBooks (v" + this.latestVersion + ") is available at:");
-                    this.plugin.getLogger().info("https://www.spigotmc.org/resources/citizensbooks." + resourceId + "/");
+                    this.plugin.getLogger().info("An update for Wingman (v" + this.latestVersion + ") is available at:");
+                    this.plugin.getLogger().info("https://www.spigotmc.org/resources/wingman." + resourceId + "/");
                 });
             } else
                 Bukkit.getScheduler().runTask(this.plugin, () ->

@@ -58,7 +58,7 @@ public class WingmanFlyCommand implements TabExecutor {
                     sender.sendMessage(toggle ? this.plugin.getMessage("lang.fly_enabled", ConfigDefaults.fly_enabled)
                             : this.plugin.getMessage("lang.fly_disabled", ConfigDefaults.fly_disabled));
                 } else {
-                    Optional<WingmanPlayerData> data = Optional.ofNullable(this.api.getPlayerData(player.getUniqueId()));
+                    Optional<WingmanPlayerData> data = Optional.ofNullable(this.api.getPlayerData(player));
                     if (data.isPresent()) {
                         if (data.get().getFlyTime() > 0) {
                             boolean toggle = !player.getAllowFlight();

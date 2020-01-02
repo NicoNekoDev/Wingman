@@ -17,17 +17,19 @@ settings:
   # Be aware that conversion from offline mode to online mode does not work
   online-mode: true
   # If database is called async
-  # It makes the server faster, if your database is not on localhost, but can cause instability
+  # It makes the server faster, if your database is not on localhost, but can cause instability otherwise
   async: false
-  # Enable action bar?
+  # Should we enable action bar?
   flytime_actionbar: true
   # In case of crash, how often (in seconds) to save players flytime to database
   # If the player disconnect the flytime for that player is saved anyway
   # Default: 10
   auto-save: 10
-  # In case the flytime runs out for a player, how many seconds should we protect him from fall damage?
+  # How long should we protect the player from fall damage when he runs out of flytime?
   # Default: 5
-  fly_dezactivated_falldamage_protection: 5
+  fly_falldamage_protection: 5
+  # Should we enable fly for a players when he joins and he is in air?
+  fly_enable_on_join: true
 lang:
   header: "&f[&6Wingman&f] &r"
   no_permission: "&cYou don''t have permission!"
