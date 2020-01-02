@@ -85,4 +85,4 @@ database:
   port: "3306"
   name: "name"
   ssl: true
-  tabel_prefix: ""
+  tabel_prefix: "Wingman_"

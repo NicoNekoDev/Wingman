@@ -50,7 +50,7 @@ public class WingmanAPI {
         try {
             this.connection = DriverManager.getConnection(url);
             this.connection.prepareStatement(
-                    "CREATE TABLE IF NOT EXISTS " + settings.getString("database.table_prefix", "") + "flytime(uuid VARCHAR(36) PRIMARY KEY, time BIGINT);").executeUpdate();
+                    "CREATE TABLE IF NOT EXISTS " + settings.getString("database.table_prefix", "Wingman_") + "flytime(uuid VARCHAR(36) PRIMARY KEY, name VARCHAR(50), time BIGINT);").executeUpdate();
         } catch (SQLException ex) {
             ex.printStackTrace();
         }
